@@ -54,12 +54,12 @@ function enableOWAFetch() {
         uri = await getUri()
 
         //call fetch
-        let mailInfoJson = await fetchOWA(asdf, fdsa, uri)
+        //let mailInfoJson = await fetchOWA(asdf, fdsa, uri)
 
         //check # of unread mails
-        let numberUnreadMails = countUnreadMsg(mailInfoJson)
+        //let numberUnreadMails = countUnreadMsg(mailInfoJson)
 
-        console.log(numberUnreadMails)
+        //console.log(numberUnreadMails)
 
 
         //set badge
@@ -92,15 +92,24 @@ function userDataExists(){
 
 
 //login web-owa an get required info
-function fetchOWA(asdf, fdsa, baseUri) {
+fetchOWA2("s3276953@msx.tu-dresden.de", "Hinl16dc!", "https://msx.tu-dresden.de/owa/")
+function fetchOWA2(asdf, fdsa, baseUri) {
     return new Promise((resolve, reject) => {
 
-        asdf = encodeURI(asdf)
-        fdsa = encodeURI(fdsa)
+        //encodeURIComponent and encodeURI are not working reliable. See documentation. Thats why I add custom encoding.
+        asdf = encodeURIComponent(asdf)
+        fdsa = encodeURIComponent(fdsa)
+        fdsa = "Hinl16dc%21"
         
-        var baseUriEncoded = encodeURI(baseUri)
+        var baseUriEncoded = encodeURIComponent(baseUri)
         var mailInfoJson = new Object()
 
+        console.log(baseUriEncoded)
+        console.log(baseUri)
+        console.log(asdf)
+        console.log(fdsa)
+
+        
         //login
         fetch(baseUri + "auth.owa", {
             "headers": {
@@ -116,11 +125,11 @@ function fetchOWA(asdf, fdsa, baseUri) {
             },
             "referrer": baseUri + "auth/logon.aspx?replaceCurrent=1&url=" + baseUriEncoded + "%23authRedirect%3dtrue",
             "referrerPolicy": "strict-origin-when-cross-origin",
-            "body": "destination=" + baseUriEncoded + "%23authRedirect%3Dtrue&flags=4&forcedownlevel=0&username=" + "s3276953" + "%40msx.tu-dresden.de&password=" + fdsa + "&passwordText=&isUtf8=1",
+            "body": "destination=" + baseUriEncoded + "%23authRedirect%3Dtrue&flags=4&forcedownlevel=0&username=" + asdf + "&password=" + fdsa + "&passwordText=&isUtf8=1",
             "method": "POST",
             "mode": "no-cors",
             "credentials": "include"
-        })
+            })
             .then(() => {
                 //get clientID and correlationID
                 fetch(baseUri, {
@@ -134,7 +143,7 @@ function fetchOWA(asdf, fdsa, baseUri) {
                         "sec-fetch-user": "?1",
                         "upgrade-insecure-requests": "1"
                     },
-                    "referrer": baseUri + "auth/logon.aspx?replaceCurrent=1&url=" + baseUri.slice(0, -1),
+                    "referrer": baseUri + "auth/logon.aspx?replaceCurrent=1&url=" + baseUriEncoded.slice(0, -3),
                     "referrerPolicy": "strict-origin-when-cross-origin",
                     "body": null,
                     "method": "GET",
@@ -142,56 +151,57 @@ function fetchOWA(asdf, fdsa, baseUri) {
                     "credentials": "include"
                 })
                     //extract x-owa-correlationid
-                    .then(resp => resp.text()).then(respText => {
-                        let temp = respText.split("window.clientId = '")[1]
-                        let clientId = temp.split("'")[0]
-                        let corrId = clientId + "_" + (new Date()).getTime()
-                        console.log("corrID: " + corrId)
+                .then(resp => resp.text()).then(respText => {
+                    console.log("resp:" + respText)   
+                    let temp = respText.split("window.clientId = '")[1]
+                    let clientId = temp.split("'")[0]
+                    let corrId = clientId + "_" + (new Date()).getTime()
+                    console.log("corrID: " + corrId)
+                })
+                //getConversations
+                .then(corrId => {
+                    fetch(baseUri + "sessiondata.ashx?appcacheclient=0", {
+                        "headers": {
+                            "accept": "*/*",
+                            "accept-language": "de-DE,de;q=0.9,en-DE;q=0.8,en-GB;q=0.7,en-US;q=0.6,en;q=0.5",
+                            "sec-fetch-dest": "empty",
+                            "sec-fetch-mode": "cors",
+                            "sec-fetch-site": "same-origin",
+                            "x-owa-correlationid": corrId,
+                            "x-owa-smimeinstalled": "1"
+                        },
+                        "referrer": baseUri,
+                        "referrerPolicy": "strict-origin-when-cross-origin",
+                        "body": null,
+                        "method": "POST",
+                        "mode": "no-cors",
+                        "credentials": "include"
                     })
-                    //getConversations
-                    .then(corrId => {
-                        fetch(baseUri + "sessiondata.ashx?appcacheclient=0", {
+                    .then(resp => resp.json()).then(respJson => {
+                        mailInfoJson = respJson
+                    })
+                    //logout
+                    .then(() => {
+                        fetch(baseUri + "logoff.owa", {
                             "headers": {
-                                "accept": "*/*",
+                                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
                                 "accept-language": "de-DE,de;q=0.9,en-DE;q=0.8,en-GB;q=0.7,en-US;q=0.6,en;q=0.5",
-                                "sec-fetch-dest": "empty",
-                                "sec-fetch-mode": "cors",
+                                "sec-fetch-dest": "document",
+                                "sec-fetch-mode": "navigate",
                                 "sec-fetch-site": "same-origin",
-                                "x-owa-correlationid": corrId,
-                                "x-owa-smimeinstalled": "1"
+                                "sec-fetch-user": "?1",
+                                "upgrade-insecure-requests": "1"
                             },
                             "referrer": baseUri,
                             "referrerPolicy": "strict-origin-when-cross-origin",
                             "body": null,
-                            "method": "POST",
+                            "method": "GET",
                             "mode": "no-cors",
                             "credentials": "include"
                         })
-                            .then(resp => resp.json()).then(respJson => {
-                                mailInfoJson = respJson
-                            })
-                            //logout
-                            .then(() => {
-                                fetch(baseUri + "logoff.owa", {
-                                    "headers": {
-                                        "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-                                        "accept-language": "de-DE,de;q=0.9,en-DE;q=0.8,en-GB;q=0.7,en-US;q=0.6,en;q=0.5",
-                                        "sec-fetch-dest": "document",
-                                        "sec-fetch-mode": "navigate",
-                                        "sec-fetch-site": "same-origin",
-                                        "sec-fetch-user": "?1",
-                                        "upgrade-insecure-requests": "1"
-                                    },
-                                    "referrer": baseUri,
-                                    "referrerPolicy": "strict-origin-when-cross-origin",
-                                    "body": null,
-                                    "method": "GET",
-                                    "mode": "no-cors",
-                                    "credentials": "include"
-                                })
-                            }).then(() => resolve(mailInfoJson))
-                    })
-            })
+                    }).then(() => resolve(mailInfoJson))
+                })
+        })
     })
 
 }
