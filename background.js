@@ -31,39 +31,42 @@ chrome.extension.onMessage.addListener(async function (request, sender, sendResp
 })
 
 //show badge
-function show_badge(Text, Color, timeout) {
+function show_badge(Text, Color) {
+    console.log(Text + Color)
     chrome.browserAction.setBadgeText({ text: Text });
     chrome.browserAction.setBadgeBackgroundColor({ color: Color });
-    setTimeout(function () {
-        chrome.browserAction.setBadgeText({ text: "" });
-    }, timeout);
 }
 
 //start OWA fetch funtion interval based
 function enableOWAFetch() {
-    chrome.alarms.create("fetchOWAAlarm", {delayInMinutes: 0, periodInMinutes: 1})
-    chrome.alarms.onAlarm.addListener(async (alarm) => {
-        //get user data
-        let asdf = ""
-        let fdsa = ""
-        let uri = ""
-        await getUserData().then((userData) => {
-            asdf = userData.asdf
-            fdsa = userData.fdsa
-        })
-        uri = await getUri()
+    //first, clear all alarms
+    chrome.alarms.clearAll(() => {
+        chrome.alarms.create("fetchOWAAlarm", { delayInMinutes: 0, periodInMinutes: 1 })
+        chrome.alarms.onAlarm.addListener(async (alarm) => {
+            //get user data
+            let asdf = ""
+            let fdsa = ""
+            let uri = ""
+            await getUserData().then((userData) => {
+                asdf = userData.asdf
+                fdsa = userData.fdsa
+            })
+            uri = await getUri()
 
-        //call fetch
-        //let mailInfoJson = await fetchOWA(asdf, fdsa, uri)
+            //call fetch
+            let mailInfoJson = await fetchOWA(asdf, fdsa, uri)
 
-        //check # of unread mails
-        //let numberUnreadMails = countUnreadMsg(mailInfoJson)
+            //check # of unread mails
+            let numberUnreadMails = await countUnreadMsg(mailInfoJson)
+            console.log(numberUnreadMails)
 
-        //console.log(numberUnreadMails)
 
+            //set badge
+            if (numberUnreadMails == 0) show_badge("", '#4cb749')
+            else if (numberUnreadMails > 99) show_badge("99+", '#4cb749')
+            else show_badge(numberUnreadMails.toString(), '#4cb749')
 
-        //set badge
-
+            })
     })
 }
 
@@ -89,26 +92,22 @@ function userDataExists(){
     })
 }
 
+function customURIEncoding(string){
+    string = encodeURIComponent(string)
+    string = string.replace("!", "%21").replace("'", "%27").replace("(", "%28").replace(")", "%29").replace("~", "%7E")
+    return string
+}
 
 
-//login web-owa an get required info
-fetchOWA2("s3276953@msx.tu-dresden.de", "Hinl16dc!", "https://msx.tu-dresden.de/owa/")
-function fetchOWA2(asdf, fdsa, baseUri) {
+function fetchOWA(asdf, fdsa, baseUri) {
     return new Promise((resolve, reject) => {
 
-        //encodeURIComponent and encodeURI are not working reliable. See documentation. Thats why I add custom encoding.
-        asdf = encodeURIComponent(asdf)
-        fdsa = encodeURIComponent(fdsa)
-        fdsa = "Hinl16dc%21"
-        
-        var baseUriEncoded = encodeURIComponent(baseUri)
+        //encodeURIComponent and encodeURI are not working for all chars. See documentation. Thats why I add custom encoding.
+        asdf = customURIEncoding(asdf)
+        fdsa = customURIEncoding(fdsa)
+        var baseUriEncoded = customURIEncoding(baseUri)
+
         var mailInfoJson = new Object()
-
-        console.log(baseUriEncoded)
-        console.log(baseUri)
-        console.log(asdf)
-        console.log(fdsa)
-
         
         //login
         fetch(baseUri + "auth.owa", {

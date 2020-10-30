@@ -4,7 +4,7 @@
     "description": "Simple notifications for new Mails in OWA",
     "manifest_version": 2,
     "optional_permissions": [],
-    "permissions": ["storage" , "system.cpu", "alarms", "http://*/*"],
+    "permissions": ["storage" , "system.cpu", "alarms", "http://*/*", "https://*/"],
     "background": {
         "scripts": [
             "background.js"
