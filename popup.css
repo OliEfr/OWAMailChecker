@@ -1,0 +1,83 @@
+body {
+  border: solid 2px #909090;
+  background-color: #ffffff;
+  border-radius: 4px;
+  max-width: 600px; /*limit by chrome: 789px*/
+  min-width: 510px; /*limit by chrome: 789px*/
+  max-height: 590px; /*limit by chrome: 590px*/
+  width:  600px;
+  margin: 0px;
+  padding: 12px;
+  font-size: 13px;
+  font-family: Arial, Helvetica, sans-serif;
+  
+}
+
+.instruction_section {
+    margin-bottom: 15px;
+}
+
+.step_heading {
+    font-weight: bold;
+}
+
+.step_instructions {
+    margin-left: 15px;
+}
+
+.commment {
+
+}
+
+html {
+  background-color: #909090;
+}
+
+
+/* headline */
+.headline {
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 25px;
+}
+
+input[type=text], input[type=password] {
+  width: 500px;
+  padding: 3px 12px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+input::-webkit-input-placeholder {
+    font-size: 13px;
+}
+
+input:focus {
+  /*outline: none !important;*/
+}
+
+button {
+  width: 190px;
+  background-color: grey;
+  color: white;
+  padding: 5px;
+  margin: 0px 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  margin-left: 62px;
+}
+
+button:hover {
+  background-color: darkgray;
+}
+
+/* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+.active {
+  background-color: #ccc;
+}

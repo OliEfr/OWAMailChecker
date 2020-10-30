@@ -23,6 +23,10 @@ chrome.extension.onMessage.addListener(async function (request, sender, sendResp
             break
         case 'start_owa_fetch':
             enableOWAFetch()
+            break
+        case 'is_user_registered':
+            userDataExists().then((userRegistered) => sendResponse(userRegistered))
+            break
         default:
             console.log('Cmd not found!')
             break
@@ -62,11 +66,40 @@ function enableOWAFetch() {
 
 
             //set badge
-            if (numberUnreadMails == 0) show_badge("", '#4cb749')
-            else if (numberUnreadMails > 99) show_badge("99+", '#4cb749')
-            else show_badge(numberUnreadMails.toString(), '#4cb749')
-
-            })
+            if (numberUnreadMails == 0) {
+                show_badge("", '#4cb749')
+                chrome.browserAction.setIcon({
+                    path: {
+                        "16": "icons/16_grey_2.png",
+                        "32": "icons/32_grey_2.png",
+                        "48": "icons/48_grey_2.png",
+                        "128": "icons/128_grey_2.png"
+                    }
+                });
+            }
+            else if (numberUnreadMails > 99) {
+                show_badge("99+", '#4cb749')
+                chrome.browserAction.setIcon({
+                    path: {
+                        "16": "icons/16_color_2.png",
+                        "32": "icons/32_color_2.png",
+                        "48": "icons/48_color_2.png",
+                        "128": "icons/128_color_2.png"
+                    }
+                });
+            }
+            else {
+                show_badge(numberUnreadMails.toString(), '#4cb749')
+                chrome.browserAction.setIcon({
+                    path: {
+                        "16": "icons/16_color_2.png",
+                        "32": "icons/32_color_2.png",
+                        "48": "icons/48_color_2.png",
+                        "128": "icons/128_color_2.png"
+                    }
+                });
+            }
+        })
     })
 }
 
@@ -86,7 +119,10 @@ function userDataExists(){
                 if (userData.asdf === undefined || userData.fdsa === undefined) {
                    resolve(false)
                 } else {
-                    resolve(true)
+                    getUri().then(uri => {
+                        if (uri === undefined || uri==='') resolve(false)
+                        else resolve(true)
+                   })
                 }
         })
     })

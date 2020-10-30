@@ -15,5 +15,11 @@
         "default_popup": "popup.html"
     },
     "options_page": "",
+    "icons": {
+        "16": "icons/16_grey_2.png",
+        "32": "icons/32_grey_2.png",
+        "48": "icons/48_grey_2.png",
+        "128": "icons/128_grey_2.png"
+    },
     "web_accessible_resources": []
   }

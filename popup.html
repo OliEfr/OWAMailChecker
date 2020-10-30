@@ -3,28 +3,49 @@
 
 <head>
     <script src="popup.js"></script>
+    <link rel="stylesheet" href="popup.css">
 </head>
 
 <body>
-    <p>Gib hier deine Zugangsdaten ein:</p>
-    <form>
-        <label for="url">Url:</label><br>
-        <input type="text" id="url_field"><br>
-        <p></p>
-        <label for="username">Username:</label><br>
-        <input type="text" id="username_field"><br>
-        <p></p>
-        <label for="password">Passwort:</label><br>
-        <input type="password" id="password_field">
-    </form>
-    <p></p>
-    <p></p>
-    <button id="save_data">Speichern</button>
-    <p id="status_msg"></p>
+    <div class="headline">Welcome to OWA Mail Checker</div>
+    <div style="margin-bottom: 30px; line-height: 18px;" class="description"><p>This extension shows number of unread messages in you OWA-Account - also if you are not logged in!<br>The Number of unread messages will appear in the extensions icon.</p></div>
+    <div class="instruction_section">
+        <p class ="step_heading">Step 1</p>
+        <div class="step_instructions">
+            <span>Navigate to your OWA-Login page. Copy the complete(!) URL of the page, paste it here and save.<br></span> 
+            <form>
+                <label  for="url">Your URL:</label>
+                <input placeholder="https://[user-specific-domain]/owa/auth/logon.aspx?[some-stuff]" type="text" id="url_field"><br>
+            </form>
+            <button id="save_url">Save</button>
+            <p id="status_msg_url"></p>
+        </div>
+    </div>
+    <div class="instruction_section">
+        <p class="step_heading">Step 2</p>
+        <div class="step_instructions">
+            <span>Your data is encrypted and only saved locally on this PC!</span>
+            <form>
+                <label for="username">Username:</label>
+                <input placeholder="username" type="text" id="username_field">
+                <label for="password">Passwort:&nbsp;&nbsp;</label>
+                <input style="margin-top:0px;" placeholder="password" type="password" id="password_field">
+            </form>
+            <button style="margin-left:67px;" id="save_userdata">Save</button>
+            <p id="status_msg_userdata"></p>
+        </div>
+    </div>
+    <div style="margin-bottom: 30px;" class="instruction_section">
+        <p class="step_heading">Your status</p>
+        <div class="step_instructions">
+            <span id="status">Please complete step 1 and step 2!</span>    
+        </div>
+    </div>
     <p>
-        <a href="mailto:ollidev97@gmail.com?Subject=AutoLoginChromeExtension" target="_blank">Entwickler
-            kontaktieren</a>
-        (ollidev97@gmail.com)
+        Feedback and Suggestions: <a href="mailto:ollidev97@gmail.com?Subject=AutoLoginChromeExtension" target="_blank">ollidev97@gmail.com</a>
+    </p>
+    <p>
+        Please <a href="mailto:ollidev97@gmail.com?Subject=AutoLoginChromeExtension" target="_blank">rate</a> this extension
     </p>
 </body>
 
