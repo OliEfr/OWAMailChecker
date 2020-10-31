@@ -8,6 +8,29 @@ userDataExists().then((userDataExists) => {
     }
 })
 
+function owaIsOpened(){
+    return new Promise(async (resolve, reject) => {
+        let uri = await getUri()
+        let tabs = await getAllChromeTabs()
+        tabs.forEach(function (tab) {
+            if ((tab.url).includes(uri)) {
+                console.log("currentyl opened owa")
+                resolve(true)
+            }
+        })
+        resolve(false)
+    })
+}
+
+function getAllChromeTabs() {
+    return new Promise(async (res, rej) => {
+        await chrome.tabs.query({}, function (tabs) {
+            res(tabs)
+        })
+    })
+}
+
+
 //listen for messages from popup or content scripts
 chrome.extension.onMessage.addListener((request, sender, sendResponse) => {
     switch (request.cmd) {
@@ -55,6 +78,14 @@ function enableOWAFetch() {
     chrome.alarms.clearAll(() => {
         chrome.alarms.create("fetchOWAAlarm", { delayInMinutes: 0, periodInMinutes: 1 })
         chrome.alarms.onAlarm.addListener(async (alarm) => {
+            //only execute if owa not opened!
+            if(await owaIsOpened()) {
+                console.log("aborting fetch ..")
+                return
+            }
+
+            console.log("executing fetch ...")
+            
             //get user data
             let asdf = ""
             let fdsa = ""

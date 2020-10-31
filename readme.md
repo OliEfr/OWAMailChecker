@@ -10,3 +10,4 @@ Roadmap:
  - only request permission for required domain
  - make domain permission optional
  - add option: notification for new message
+ - only show NEW unread messages?
