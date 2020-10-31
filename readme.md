@@ -9,3 +9,4 @@ I am happy for suggestions and feedback: ollidev97@mail.com 💪
 Roadmap:
  - only request permission for required domain
  - make domain permission optional
+ - add option: notification for new message
