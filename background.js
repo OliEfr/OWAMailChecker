@@ -4,31 +4,33 @@
 userDataExists().then((userDataExists) => {
     if (userDataExists) {
         enableOWAFetch()
-        console.log("deteced user data")
+        console.log("deteced user data.")
     }
 })
 
 //listen for messages from popup or content scripts
-chrome.extension.onMessage.addListener(async function (request, sender, sendResponse) {
+chrome.extension.onMessage.addListener((request, sender, sendResponse) => {
     switch (request.cmd) {
         case 'msg':
             show_badge('msg', 'color', request.timeout)
             break
         case 'get_user_data':
-            getUserData().then((userData) => sendResponse(userData))
+            getUserData().then((userData) => { sendResponse(userData) })
             break
         case 'set_user_data':
-            await setUserData(request.userData)
-            enableOWAFetch()
-            break
-        case 'start_owa_fetch':
-            enableOWAFetch()
+            setUserData(request.userData)
             break
         case 'is_user_registered':
-            userDataExists().then((userRegistered) => sendResponse(userRegistered))
+            userDataExists().then((userRegistered) => { sendResponse(userRegistered) })
+            break
+        case "enable_owa_fetch":
+            enableOWAFetch()
+            break
+        case "disable_owa_fetch":
+            disableOwaFetch()
             break
         default:
-            console.log('Cmd not found!')
+            console.log('Cmd not found: ' + request.cmd)
             break
     }
     return true //required for async sendResponse
@@ -41,9 +43,15 @@ function show_badge(Text, Color) {
     chrome.browserAction.setBadgeBackgroundColor({ color: Color });
 }
 
+function disableOwaFetch() {
+    console.log("stoped owa connection")
+    chrome.alarms.clearAll(() => {})
+}
+
 //start OWA fetch funtion interval based
 function enableOWAFetch() {
     //first, clear all alarms
+    console.log("starting to fetch from owa...")
     chrome.alarms.clearAll(() => {
         chrome.alarms.create("fetchOWAAlarm", { delayInMinutes: 0, periodInMinutes: 1 })
         chrome.alarms.onAlarm.addListener(async (alarm) => {
@@ -108,23 +116,24 @@ function getUri(){
         chrome.storage.local.get(['base_url'], async (res) => {
             resolve(res.base_url)
         })
-
     })
 }
 
-//check if username, password exists. It is assumed, that url exists in this case as well.
+//check if username, password, url exists.
 function userDataExists(){
-    return new Promise((resolve, reject) => {
-        getUserData().then((userData) => {
-                if (userData.asdf === undefined || userData.fdsa === undefined) {
-                   resolve(false)
-                } else {
-                    getUri().then(uri => {
-                        if (uri === undefined || uri==='') resolve(false)
-                        else resolve(true)
-                   })
-                }
-        })
+    return new Promise(async (resolve, reject) => {
+        let userData = await getUserData()
+        if (userData.asdf === undefined || userData.fdsa === undefined){
+            resolve(false)
+            return
+        }
+        let uri = await getUri()
+        if (uri === undefined || uri === '') {
+            resolve(false)
+            return
+        }
+        resolve(true)
+        return
     })
 }
 
@@ -187,7 +196,6 @@ function fetchOWA(asdf, fdsa, baseUri) {
                 })
                     //extract x-owa-correlationid
                 .then(resp => resp.text()).then(respText => {
-                    console.log("resp:" + respText)   
                     let temp = respText.split("window.clientId = '")[1]
                     let clientId = temp.split("'")[0]
                     let corrId = clientId + "_" + (new Date()).getTime()

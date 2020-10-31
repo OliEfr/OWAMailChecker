@@ -24,17 +24,56 @@ function saveURL() {
         document.getElementById("save_url").style.backgroundColor = "grey"
     }, 2000)
 
-    updateStatus()
-
+    setTimeout(() => {
+        updateStatus()
+    }, 500)
 }
 
 //check whether url and userData is provided already
 function updateStatus() {
     chrome.runtime.sendMessage({ cmd: 'is_user_registered' }, function (userIsRegistered) {
         if (userIsRegistered) {
-            document.getElementById("status").value = "You are registered and mail form OWA will be checked!"
+            document.getElementById("status").innerHTML = "You are registered and mail form OWA will be checked!"
+            document.getElementById("status").style.color = "green"
+            enableOwaFetch()
+        } else {
+            document.getElementById("status").innerHTML = "Complete step 1 and step 2 to get started!"
+            document.getElementById("status").style.color = "grey"
+            disableOwaFetch()
         }
     })
+}
+
+function disableOwaFetch() {
+    chrome.runtime.sendMessage({ cmd: 'disable_owa_fetch' }, function (userIsRegistered) { })
+}
+
+function enableOwaFetch(){
+    chrome.runtime.sendMessage({ cmd: 'enable_owa_fetch' }, function (userIsRegistered) {})
+}
+
+function deleteUserData(){
+    //reset popup
+    document.getElementById('status_msg_userdata').innerHTML = ""
+    document.getElementById('status_msg_url').innerHTML = ""
+    document.getElementById("delete_userdata").innerHTML = '<font>Deleted!</font>'
+    document.getElementById("delete_userdata").style.backgroundColor = "rgb(47, 143, 18)"
+    document.getElementById("username_field").value = ""
+    document.getElementById("password_field").value = ""
+    document.getElementById("url_field").value = ""
+
+    setTimeout(() => {
+        document.getElementById("delete_userdata").innerHTML = 'Delete all data';
+        document.getElementById("delete_userdata").style.backgroundColor = "grey"
+    }, 2000)
+
+    chrome.storage.local.set({ Data: "undefined" }, function () { }) //this is how to delete user data!
+    chrome.storage.local.set({ raw_url: "undefined" }, function () { }) //this is how to delete user data!
+    chrome.storage.local.set({ base_url: "undefined" }, function () { }) //this is how to delete user data!
+    
+    setTimeout(() => {
+        updateStatus()
+    }, 500)
 }
 
 function saveUserData() {
@@ -63,7 +102,9 @@ function saveUserData() {
     //save data
     chrome.runtime.sendMessage({ cmd: "set_user_data", userData: { asdf: asdf, fdsa: fdsa } })
 
-    updateStatus()
+    setTimeout(() => {
+        updateStatus()
+    }, 500)
 }
 
 //check if uri matches required pattern
@@ -82,7 +123,11 @@ function extractBaseURI(uri){
 
 //this need to be done here since manifest v2
 window.onload = function () {
-    updateStatus()
+    setTimeout(() => {
+        updateStatus()
+    }, 500)
     document.getElementById('save_userdata').onclick = saveUserData;
+    document.getElementById('delete_userdata').onclick = deleteUserData;
     document.getElementById('save_url').onclick = saveURL;
+
 }
